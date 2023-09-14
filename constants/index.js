@@ -1,2 +1,2 @@
-exports.PAYME_LOGIN = ''
-exports.PAYME_PASSWORD = '6vPEZZYSiIjpyjQ968E4N2O#490MVa5yx%RI'
+exports.PAYME_LOGIN = "Paycom";
+exports.PAYME_PASSWORD = "6vPEZZYSiIjpyjQ968E4N2O#490MVa5yx%RI";
