@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const Router = require("express").Router;
 const config = require("../constants/index.js");
+const utils = require("../utils");
 const router = Router();
 
 const controller = require("../controllers/payment.js");
@@ -42,10 +43,47 @@ router.get("/payment", (req, res) => {
     });
   }
 
+  const usersFile = path.join(process.cwd(), "db/users.json");
+  const usersData = fs.readFileSync(usersFile, "utf-8");
+  const userData = JSON.parse(usersData).find((data) => data.id === user_id);
+  const jsonFile = path.join(process.cwd(), "db/payments.json");
+
+  if (!fs.existsSync(jsonFile)) {
+    const jsonData = [];
+    fs.writeFileSync(jsonFile, JSON.stringify(jsonData, null, 4), "utf-8");
+  }
+
+  const paymentData = JSON.parse(fs.readFileSync(jsonFile, "utf-8")).find(
+    (data) =>
+      data.account.full_name ===
+        `${userData.firstName} ${userData.lastName ?? ""}`.trim() &&
+      data.account.phone_number === userData.phoneNumber
+  );
+  if (!paymentData) {
+    const jsonData = JSON.parse(fs.readFileSync(jsonFile));
+    jsonData.push({
+      id: "",
+      account: {
+        full_name: `${userData.firstName} ${userData.lastName ?? ""}`.trim(),
+        phone_number: userData.phoneNumber,
+      },
+      transaction: "",
+      amount: utils.sumToTiyin(amount),
+      state: utils.STATE_CREATED,
+      time: "",
+      create_time: "",
+      perform_time: "",
+      cancel_time: "",
+    });
+
+    fs.writeFileSync(jsonFile, JSON.stringify(jsonData, null, 4), "utf-8");
+  }
+
   res.json({
     status: true,
     message: "ok",
     amount: amount,
+    tiyin: utils.sumToTiyin(amount),
   });
 });
 
@@ -67,8 +105,34 @@ router.post("/payment/handle", (req, res) => {
       controller.CheckPerformTransaction(req, res);
       break;
 
-    case "":
+    case "CreateTransaction":
+      controller.CreateTransaction(req, res);
       break;
+
+    case "PerformTransaction":
+      controller.PerformTransaction(req, res);
+      break;
+
+    case "CancelTransaction":
+      controller.CancelTransaction(req, res);
+      break;
+
+    case "CheckTransaction":
+      controller.CheckTransaction(req, res);
+      break;
+
+    case "GetStatement":
+      controller.GetStatement(req, res);
+      break;
+
+    default:
+      return res.json({
+        result: null,
+        error: {
+          code: controller.ERROR_METHOD_NOT_FOUND,
+          message: "Method not found",
+        },
+      });
   }
 });
 
