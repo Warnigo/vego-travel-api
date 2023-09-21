@@ -91,7 +91,7 @@ const CreateTransaction = (req, res) => {
     });
   }
 
-  if (transaction.amount !== Number(params.amount)) {
+  if (Number(transaction.amount) !== Number(params.amount)) {
     return res.json({
       result: null,
       error: {
