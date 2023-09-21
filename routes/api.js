@@ -104,8 +104,6 @@ router.post("/payment/handle", (req, res) => {
     });
   }
 
-  console.log("ok");
-
   switch (req.body.method) {
     case "CheckPerformTransaction":
       controller.CheckPerformTransaction(req, res);

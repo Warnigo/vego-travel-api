@@ -28,7 +28,7 @@ const CheckPerformTransaction = (req, res) => {
 
   const transaction = jsonData.find((data) => {
     return (
-      data.account.first_name === params.account.full_name &&
+      data.account.full_name === params.account.full_name &&
       data.account.phone_number === params.account.phone_number
     );
   });
@@ -43,7 +43,7 @@ const CheckPerformTransaction = (req, res) => {
     });
   }
 
-  if (utils.sumToTiyin(transaction.amount) === Number(params.amount)) {
+  if (Number(transaction.amount) !== Number(params.amount)) {
     return res.json({
       result: null,
       error: {
