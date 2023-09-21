@@ -88,8 +88,10 @@ router.get("/payment", (req, res) => {
 });
 
 router.post("/payment/handle", (req, res) => {
-  let authToken = req.headers["Authorization"];
-  authToken = Buffer.from(authToken, "base64").toString();
+  let authToken =
+    req.headers["authorization"] || req.headers["Authorization"] || "";
+
+  authToken = Buffer.from(authToken.split(" ")[1], "base64").toString();
   const [_login, _password] = authToken.split(":");
 
   if (_login !== config.PAYME_LOGIN && _password !== config.PAYME_PASSWORD) {
@@ -101,6 +103,8 @@ router.post("/payment/handle", (req, res) => {
       },
     });
   }
+
+  console.log("ok");
 
   switch (req.body.method) {
     case "CheckPerformTransaction":
