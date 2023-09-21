@@ -13,9 +13,6 @@ const ERROR_INVALID_TRANSACTION = -31051;
 const ERROR_COULD_NOT_CANCEL = -31007;
 const ERROR_COULD_NOT_PERFORM = -31008;
 
-const jsonFile = path.join(process.cwd(), "db/payments.json");
-const jsonData = fs.readFileSync(jsonFile, "utf-8");
-
 /**
  * @param {import('express').Request} req
  * @param {import('express').Response} res
@@ -38,7 +35,7 @@ const CheckPerformTransaction = (req, res) => {
       result: null,
       error: {
         code: ERROR_INVALID_ACCOUNT,
-        message: "Object not found",
+        message: "Transaction not found",
       },
     });
   }
@@ -69,12 +66,12 @@ const CreateTransaction = (req, res) => {
   const jsonFile = path.resolve(process.cwd(), "db/payments.json");
   let jsonData = fs.readFileSync(jsonFile, "utf-8");
 
-  const transactionId = JSON.parse(jsonData).findIndex(
+  let transactionId = JSON.parse(jsonData).findIndex(
     (data) =>
       data.account.full_name === params.account.full_name &&
       data.account.phone_number === params.account.phone_number
   );
-  const transaction = JSON.parse(jsonData).find(
+  let transaction = JSON.parse(jsonData).find(
     (data) =>
       data.account.full_name === params.account.full_name &&
       data.account.phone_number === params.account.phone_number
@@ -88,6 +85,26 @@ const CreateTransaction = (req, res) => {
         message: "Transaction not fount.",
       },
       id: params.id,
+    });
+  }
+
+  if (transaction.id !== "" && transaction.id !== params.id) {
+    return res.json({
+      result: null,
+      error: {
+        code: ERROR_INVALID_ACCOUNT,
+        message: "Transaction found",
+      },
+    });
+  }
+
+  if (transaction.id !== "" && transaction.id === params.id) {
+    return res.json({
+      result: {
+        create_time: transaction.create_time,
+        transaction: transaction.transaction,
+        state: transaction.state,
+      },
     });
   }
 
@@ -137,10 +154,10 @@ const CreateTransaction = (req, res) => {
   transaction.create_time = Date.now();
 
   // prettier-ignore
-  jsonData = JSON.parse(jsonData)
-    .slice(transactionId, 1, transaction);
+  jsonData = JSON.parse(jsonData);
+  jsonData.splice(transactionId, 1, transaction);
 
-  fs.readFileSync(jsonFile, JSON.stringify(jsonData, null, 4));
+  fs.writeFileSync(jsonFile, JSON.stringify(jsonData, null, 4));
 
   return res.json({
     result: {
@@ -157,6 +174,9 @@ const CreateTransaction = (req, res) => {
  */
 const PerformTransaction = (req, res) => {
   const { params } = req.body;
+  const jsonFile = path.join(process.cwd(), "db/payments.json");
+  let jsonData = fs.readFileSync(jsonFile, "utf-8");
+
   const transactionId = JSON.parse(jsonData).findIndex(
     (data) => data.id === params.id
   );
@@ -179,12 +199,9 @@ const PerformTransaction = (req, res) => {
       transactionData.state = utils.STATE_COMPLETED;
       transactionData.perform_time = Date.now();
 
-      const jsonData = JSON.parse(jsonData).slice(
-        transactionId,
-        1,
-        transactionData
-      );
-      fs.writeFileSync(jsonFile, JSON.stringify(jsonData), "utf-8");
+      jsonData = JSON.parse(jsonData);
+      jsonData.splice(transactionId, 1, transactionData);
+      fs.writeFileSync(jsonFile, JSON.stringify(jsonData, null, 4), "utf-8");
 
       return res.json({
         result: {
@@ -220,6 +237,8 @@ const PerformTransaction = (req, res) => {
  */
 const CancelTransaction = (req, res) => {
   const { params } = req.body;
+  const jsonFile = path.join(process.cwd(), "db/payments.json");
+  let jsonData = fs.readFileSync(jsonFile, "utf-8");
 
   const transactionId = JSON.parse(jsonData).findIndex(
     (data) => data.id === params.id
@@ -258,14 +277,12 @@ const CancelTransaction = (req, res) => {
       break;
   }
 
+  transactionData.reason = params.reason ?? null;
   transactionData.cancel_time = Date.now();
 
-  const jsonData = JSON.parse(jsonData).slice(
-    transactionId,
-    1,
-    transactionData
-  );
-  fs.writeFile(jsonFile, jsonData, "utf-8");
+  jsonData = JSON.parse(jsonData);
+  jsonData.splice(transactionId, 1, transactionData);
+  fs.writeFileSync(jsonFile, JSON.stringify(jsonData, null, 4), "utf-8");
 
   return res.json({
     result: {
@@ -282,6 +299,8 @@ const CancelTransaction = (req, res) => {
  */
 const CheckTransaction = (req, res) => {
   const { params } = req.body;
+  const jsonFile = path.join(process.cwd(), "db/payments.json");
+  let jsonData = fs.readFileSync(jsonFile, "utf-8");
 
   const transaction = JSON.parse(jsonData).find(
     (data) => data.id === params.id
@@ -304,6 +323,7 @@ const CheckTransaction = (req, res) => {
       cancel_time: transaction.cancel_time,
       transaction: transaction.transaction,
       state: transaction.state,
+      reason: transaction.reason,
     },
   });
 };
@@ -314,6 +334,8 @@ const CheckTransaction = (req, res) => {
  */
 const GetStatement = (req, res) => {
   const { params } = req.body;
+  const jsonFile = path.join(process.cwd(), "db/payments.json");
+  let jsonData = fs.readFileSync(jsonFile, "utf-8");
 
   const transactions = JSON.parse(jsonData).filter(
     (data) =>
@@ -333,10 +355,7 @@ const GetStatement = (req, res) => {
 
   return res.json({
     result: {
-      transactions: transactions.map((transaction) => ({
-        ...transaction,
-        reason: null,
-      })),
+      transactions,
     },
   });
 };

@@ -70,10 +70,11 @@ router.get("/payment", (req, res) => {
       transaction: "",
       amount: utils.sumToTiyin(amount),
       state: utils.STATE_CREATED,
-      time: "",
-      create_time: "",
-      perform_time: "",
-      cancel_time: "",
+      time: 0,
+      create_time: 0,
+      perform_time: 0,
+      cancel_time: 0,
+      reason: null,
     });
 
     fs.writeFileSync(jsonFile, JSON.stringify(jsonData, null, 4), "utf-8");
@@ -89,12 +90,14 @@ router.get("/payment", (req, res) => {
 
 router.post("/payment/handle", (req, res) => {
   let authToken =
-    req.headers["authorization"] || req.headers["Authorization"] || "";
+    req.headers["authorization"] ??
+    req.headers["Authorization"] ??
+    "Basic UGF5Y29tOlV6Y2FyZDpzb21lUmFuZG9tU3RyaW5nMTU0NTM0MzU0MzU0NQ==";
 
   authToken = Buffer.from(authToken.split(" ")[1], "base64").toString();
   const [_login, _password] = authToken.split(":");
 
-  if (_login !== config.PAYME_LOGIN && _password !== config.PAYME_PASSWORD) {
+  if (_login !== config.PAYME_LOGIN || _password !== config.PAYME_PASSWORD) {
     return res.json({
       result: null,
       error: {
