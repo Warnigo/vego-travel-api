@@ -23,17 +23,17 @@ const jsonData = fs.readFileSync(jsonFile, "utf-8");
 const CheckPerformTransaction = (req, res) => {
   const params = req.body.params;
 
-  const jsonFile = path.resolve(process.cwd(), "db/users.json");
+  const jsonFile = path.resolve(process.cwd(), "db/payments.json");
   const jsonData = JSON.parse(fs.readFileSync(jsonFile, "utf-8"));
 
-  const user = jsonData.find((data) => {
+  const transaction = jsonData.find((data) => {
     return (
-      data.firstName === params.account.full_name &&
-      data.phoneNumber === params.account.phone_number
+      data.account.first_name === params.account.full_name &&
+      data.account.phone_number === params.account.phone_number
     );
   });
 
-  if (!user) {
+  if (!transaction) {
     return res.json({
       result: null,
       error: {
@@ -43,7 +43,7 @@ const CheckPerformTransaction = (req, res) => {
     });
   }
 
-  if (utils.sumToTiyin(user.price) === Number(params.amount)) {
+  if (utils.sumToTiyin(transaction.amount) === Number(params.amount)) {
     return res.json({
       result: null,
       error: {
