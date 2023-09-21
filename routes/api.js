@@ -88,15 +88,17 @@ router.get("/payment", (req, res) => {
 });
 
 router.post("/payment/handle", (req, res) => {
-  let authToken = req.header("Authorization");
-  authToken = Buffer.from(authToken, "base64").toString("ascii");
+  let authToken = req.headers["Authorization"];
+  authToken = Buffer.from(authToken, "base64").toString();
   const [_login, _password] = authToken.split(":");
 
   if (_login !== config.PAYME_LOGIN && _password !== config.PAYME_PASSWORD) {
     return res.json({
       result: null,
-      error: controller.ERROR_INSUFFICIENT_PRIVILEGE,
-      message: "Insufficient privilege to perform this method.",
+      error: {
+        code: controller.ERROR_INSUFFICIENT_PRIVILEGE,
+        message: "Insufficient privilege to perform this method.",
+      },
     });
   }
 
