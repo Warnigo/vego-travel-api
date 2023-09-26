@@ -343,16 +343,6 @@ const GetStatement = (req, res) => {
       Number(data.create_time) <= Number(params.to)
   );
 
-  if (!transactions.length) {
-    return res.json({
-      result: null,
-      error: {
-        code: ERROR_TRANSACTION_NOT_FOUND,
-        message: "Transaction not found",
-      },
-    });
-  }
-
   return res.json({
     result: {
       transactions,
