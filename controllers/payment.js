@@ -339,8 +339,14 @@ const GetStatement = (req, res) => {
 
   const transactions = JSON.parse(jsonData).filter(
     (data) =>
-      Number(data.create_time) >= Number(params.from) &&
-      Number(data.create_time) <= Number(params.to)
+      (Number(data.create_time) >= Number(params.from) &&
+        Number(data.create_time) <= Number(params.to)) ||
+      (Number(data.perform_time) >= Number(params.from) &&
+        Number(data.perform_time) <= Number(params.to)) ||
+      (Number(data.time) >= Number(params.from) &&
+        Number(data.time) <= Number(params.to)) ||
+      (Number(data.cancel_time) >= Number(params.from) &&
+        Number(data.cancel_time) <= Number(params.to))
   );
 
   return res.json({
