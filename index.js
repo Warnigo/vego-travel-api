@@ -5,7 +5,7 @@ const app = express();
 
 const NODE_ENV = process.env.NODE_ENV;
 
-app.use(cors({ origin: "*", allowedHeaders: ["GET", "POST", "OPTION"] }));
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(routes);
