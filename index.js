@@ -1,9 +1,11 @@
+const cors = require("cors");
 const express = require("express");
 const routes = require("./routes/api.js");
 const app = express();
 
 const NODE_ENV = process.env.NODE_ENV;
 
+app.use(cors({ origin: "*", allowedHeaders: ["GET", "POST", "OPTION"] }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(routes);
