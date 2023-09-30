@@ -1,7 +1,11 @@
 const PAYME_LOGIN = "Paycom";
-const PAYME_PASSWORD = "0umEV2VB7KatVEWt#a5AZC454np0SO2HqKE8";
+const PAYME_PASSWORD = "pAb%7G&DQ%aQ?4CspkWzRcI7iupFsnSeZsdT";
+const PAYME_MERCHANT_ID = "64f1e420d34fdfd66697807a";
+const PAYMME_CHECKOUT_ORIGIN = "https://checkout.paycom.uz";
 
 module.exports = {
   PAYME_LOGIN,
   PAYME_PASSWORD,
+  PAYME_MERCHANT_ID,
+  PAYMME_CHECKOUT_ORIGIN,
 };

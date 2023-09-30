@@ -80,12 +80,16 @@ router.get("/payment", (req, res) => {
     fs.writeFileSync(jsonFile, JSON.stringify(jsonData, null, 4), "utf-8");
   }
 
-  res.json({
-    status: true,
-    message: "ok",
-    amount: amount,
-    tiyin: utils.sumToTiyin(amount),
-  });
+  const fullName = `${userData.firstName} ${userData.lastName ?? ""}`.trim();
+  const options = [
+    `m=${config.PAYME_MERCHANT_ID}`,
+    `ac.full_name=${fullName}`,
+    `ac.phone_number=${userData.phoneNumber}`,
+    `a=${utils.sumToTiyin(amount)}`,
+  ];
+
+  const urlPathParams = Buffer.from(options.join(";")).toString("base64");
+  res.redirect(`${config.PAYMME_CHECKOUT_ORIGIN}/${urlPathParams}`);
 });
 
 router.post("/payment/handle", (req, res) => {
